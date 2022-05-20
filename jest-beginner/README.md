@@ -9,13 +9,13 @@
   * [Mocking Function](#mocking-function)
   * [Mocking Module](#mocking-module)
 
-# Before
+## Before
 
 You can get a more comprehensive tutorial in the [Introduction section of Jest's Official Documentation](https://jestjs.io/docs/getting-started). Furthermore, you can view the details of each method or function in the [API docs of Jest's Official Documentation](https://jestjs.io/docs/api).
 
 So, please read the documentation first and use my notes below as a handy copy-and-paste toolbox (?) 
 
-# Installation
+## Installation
 
 * Empty project
 
@@ -51,7 +51,7 @@ module.exports = {
 },
 ```
 
-# Lesson-1 Matchers
+## Lesson-1 Matchers
 
 We can use `toBe` to check if the result of the function is equal to a certain value.
 
@@ -120,7 +120,7 @@ expect(getArr(5)).toContain(1);
 
 [> View source code](src/1-matchers/matchers.test.js)
 
-# Lesson-2 Asynchronous Code
+## Lesson-2 Asynchronous Code
 
 Let's test our `fetchData` function below.
 
@@ -169,7 +169,7 @@ test("fetch failure", async () => {
 
 [> View source code](src/2-async/async.test.js)
 
-# Lesson-3 Before and After Test
+## Lesson-3 Before and After Test
 
 If you want to prepare something or do something **before/after** each test, you can use `beforeEach` and `afterEach`:
 
@@ -208,11 +208,11 @@ describe("notice scoping", () => {
 
 [> View source code](src/3-setup/setup.test.js)
 
-# Lesson-4 Mock Function
+## Lesson-4 Mock Function
 
 Sometimes the function we want to test also has other dependencies, such as `fetch` or other functions. Such dependencies may get out of control, so you want to mock them and return a reliable result for the core tests. 
 
-## Mocking Function
+### Mocking Function
 
 Before we spy and mock the `fetch` api, we need to know how to mock a simple function. 
 
@@ -263,7 +263,7 @@ afterEach(() => {
 });
 ```
 
-## Mocking Module
+### Mocking Module
 
 Now let's test on a real world example. Say we have a function `getUserNames()` that calls `getUsers()`, retrieves a user list `data`, and returns all usernames. 
 
