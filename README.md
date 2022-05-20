@@ -4,7 +4,7 @@ In this repository, I would like to share with you some of the testing technique
 
 ## Jest
 
-[❤️ Move here to learn complete Jest testing skills ❤️](jest-beginner/)
+[Move here to learn complete Jest testing skills ❤️](jest-beginner/)
 
 In this section, we will practice some basic testing methods in Jest.
 
@@ -15,7 +15,17 @@ In this section, we will practice some basic testing methods in Jest.
 
 ## React-testing-library
 
-TBD.
+[Move here to learn complete React-testing-library skills ❤️](react-testing-library-beginner/)
+
+In this section, we will learn how to test on React components using react-testing-library based on Jest.
+
+1. **Test Structure** - Introducing the structure required for a component test
+2. **Find the Elements** - Introducing how to use `get`, `query`, `find` to find the component to test
+3. **Assertions** - Verifying that the component is working or displayed as expected
+4. **Fire Events** - Introducing some functions that can interact with elements
+5. **Asynchronous** - Handling components that take time to display
+6. **Mock** - Simulating non-core but required components, functions, api requests
+7. **Integration Tests** - Testing the interaction between multiple components
 
 ## Cypress
 
