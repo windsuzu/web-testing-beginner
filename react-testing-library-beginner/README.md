@@ -1,19 +1,19 @@
 # React-testing-library
 
-* [React-testing-library](#react-testing-library)
-  * [Before](#before)
-  * [Installation](#installation)
-  * [Test Structure](#test-structure)
-  * [Find the Elements](#find-the-elements)
-    * [Example](#example)
-  * [Assertions](#assertions)
-  * [FireEvents](#fireevents)
-  * [Asynchronous](#asynchronous)
-  * [Mocks](#mocks)
-    * [Mocking Components](#mocking-components)
-    * [Mocking useState Functions](#mocking-usestate-functions)
-    * [Mocking APIs](#mocking-apis)
-  * [Before & After Each](#before--after-each)
+* [Before](#before)
+* [Installation](#installation)
+* [Test Structure](#test-structure)
+* [Find the Elements](#find-the-elements)
+  * [Example](#example)
+* [Assertions](#assertions)
+* [FireEvents](#fireevents)
+* [Asynchronous](#asynchronous)
+* [Mocks](#mocks)
+  * [Mocking Components](#mocking-components)
+  * [Mocking useState Functions](#mocking-usestate-functions)
+  * [Mocking APIs](#mocking-apis)
+* [Before & After Each](#before--after-each)
+* [Integration Tests](#integration-tests)
 
 ## Before
 
@@ -38,8 +38,23 @@ There is a general formula to test everything in your react app. When you test a
 4. Interact with those elements
 5. Assert the results are as expected
 
+Here is an example of a test structure from [AddInput.test.js](src/components/AddInput/AddInput.test.js)
+
 ``` js
-example
+// 1.
+test("should be able to type in input", () => {
+    // 2.
+    render(<MockAddInput />);
+
+    // 3.
+    const inputDOM = screen.getByPlaceholderText("Add a new task here...");
+
+    // 4.
+    fireEvent.change(inputDOM, { target: { value: "Learn React" } });
+
+    // 5.
+    expect(inputDOM.value).toBe("Learn React");
+});
 ```
 
 ## Find the Elements
@@ -122,44 +137,140 @@ it("findBy will return result after async/await", async () => {
 
 ## Assertions
 
-toBeInTheDocument
-toBeVisible
-toContainHTML
-toHaveTextContent
-toHaveClass
-.value toBe
-.textContent toBe
+When we want to validate the behavior, text, or value of our components, we can use the [assertions we learned in Jest](../jest-beginner/), such as `toBe`, `toEqual`, or `toMatch`.
+
+``` js
+expect(headers.length).toBe(1);
+expect(tasksCount.textContent).toBe("2 tasks left");
+expect(inputDOM.value).toBe("Learn React");
+```
+
+Or, we can utilize some of the assertion functions that are built into `react-testing-library`.
+
+``` js
+expect(header).toBeInTheDocument();
+expect(screen.getByText(/followers/i)).toBeVisible();
+expect(taskCount).toContainHTML("p");
+expect(tasksCount).toHaveTextContent("2 tasks left");
+expect(todo).toHaveClass("todo-item-active");
+```
 
 ## FireEvents
 
-fireEvent.change target value
-fireEvent.click
+Sometimes we also want to interact with our components, like clicking a button or typing something into our input field. We can achieve these interaction by using `fireEvent` in `react-testing-library`. 
 
-## Asynchronous
+``` js
+import { fireEvent, render, screen } from "@testing-library/react";
 
-Async
-async/await + findBy/findAllBy
+const inputDOM = screen.getByPlaceholderText("Add a new task here...");
+const addBtn = screen.getByText("Add");
+fireEvent.change(inputDOM, { target: { value: "Learn React" } });
+fireEvent.click(addBtn);
+expect(inputDOM.value).toBe("");
+```
 
 ## Mocks
 
 ### Mocking Components
 
-BrowserRouter
+``` js
+const MockTodoFooter = ({ taskCount }) => (
+    <BrowserRouter>
+        <TodoFooter numberOfIncompleteTasks={taskCount} />
+    </BrowserRouter>
+);
+
+render(<MockTodoFooter taskCount={1} />);
+```
 
 ### Mocking useState Functions
 
-useStateFunction
+``` js
+const MockAddInput = () => (
+  <AddInput 
+    todos={[]}
+    setTodos={jest.fn()} />;
+)
+
+render(<MockAddInput />);
+```
+
 
 ### Mocking APIs
 
-request data
+``` js
+const mockResponse = {
+    data: {
+        results: [
+            {
+                name: { first: "John", last: "Doe" },
+                login: { username: "johndoe" },
+                picture: {
+                    large: "https://randomuser.me/api/portraits/men/1.jpg",
+                },
+            },
+        ],
+    },
+};
+
+const mockAxiosGet = jest.spyOn(axios, "get");
+mockAxiosGet.mockResolvedValue(mockResponse);
+```
+
+## Asynchronous
+
+``` js
+it("should render multiple followers", async () => {
+    render(<MockFollowerList />);
+    const followers = await screen.findAllByTestId(/follower-item/i);
+    expect(followers.length).toBe(5);
+});
+```
+
+``` js
+it("should render only 1 follower", async () => {
+    const mockAxiosGet = jest.spyOn(axios, "get");
+    mockAxiosGet.mockResolvedValue(mockResponse);
+
+    render(<MockFollowerList />);
+    const followers = await screen.findAllByTestId(/follower-item/i);
+    expect(followers.length).toBe(1);
+    expect(mockAxiosGet).toHaveBeenCalledTimes(1);
+});
+```
 
 ## Before & After Each
 
-Same as in jest.
+Same as in jest. You can set up anything in `beforeEach` or `beforeAll`, or dispose anything in `afterEach` or `afterAll`. 
 
 ## Integration Tests
 
-examples
-
 typeinput addbutton clearinput showintodolist
+
+``` js
+const addTask = (tasks) => {
+    tasks.forEach((task) => {
+        const inputDOM = screen.getByPlaceholderText("Add a new task here...");
+        const addBtn = screen.getByText("Add");
+        fireEvent.change(inputDOM, { target: { value: task } });
+        fireEvent.click(addBtn);
+        expect(inputDOM.value).toBe("");
+    });
+};
+
+describe("add todo", () => {
+    test("add todo should be rendered in todolist", () => {
+        render(<MockTodo />);
+        addTask(["Learn React"]);
+        const todo = screen.getByText("Learn React");
+        expect(todo).toBeInTheDocument();
+    });
+
+    test("add multiple todos should be rendered in todolist", () => {
+        render(<MockTodo />);
+        addTask(["Learn React", "Learn Redux"]);
+        const todos = screen.getAllByTestId("todo");
+        expect(todos.length).toBe(2);
+    });
+});
+```
