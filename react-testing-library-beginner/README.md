@@ -171,7 +171,11 @@ expect(inputDOM.value).toBe("");
 
 ## Mocks
 
+When you test components, there are many things you can and should mock. Because these things are not what you should mainly focus on but still need to implement.
+
 ### Mocking Components
+
+The component you are testing may need to be wrapped by another parent component. In this case, we can create a mock component that wraps the test component with the required parent component.
 
 ``` js
 const MockTodoFooter = ({ taskCount }) => (
@@ -185,6 +189,8 @@ render(<MockTodoFooter taskCount={1} />);
 
 ### Mocking useState Functions
 
+Sometimes we need to pass props to a component, and props may include functions such as `setTodos` in useState. We can replace them by passing function mock - `jest.fn()` instead. 
+
 ``` js
 const MockAddInput = () => (
   <AddInput 
@@ -195,8 +201,9 @@ const MockAddInput = () => (
 render(<MockAddInput />);
 ```
 
-
 ### Mocking APIs
+
+Some components display content after calling some APIs. And we already know that it is a bad practice to fetch the real API while testing. So we should mock API requests when testing these components as well.
 
 ``` js
 const mockResponse = {
@@ -219,6 +226,8 @@ mockAxiosGet.mockResolvedValue(mockResponse);
 
 ## Asynchronous
 
+An example of asynchronous testing with a real API.
+
 ``` js
 it("should render multiple followers", async () => {
     render(<MockFollowerList />);
@@ -226,6 +235,8 @@ it("should render multiple followers", async () => {
     expect(followers.length).toBe(5);
 });
 ```
+
+An example of asynchronous testing with a mock API.
 
 ``` js
 it("should render only 1 follower", async () => {
@@ -245,7 +256,13 @@ Same as in jest. You can set up anything in `beforeEach` or `beforeAll`, or disp
 
 ## Integration Tests
 
-typeinput addbutton clearinput showintodolist
+You can think of integration tests as a combination of multiple unit tests. During a integration test, we test whether the interaction between multiple components works as expected. 
+
+We can say that the following test is an integration test:
+
+1. Test if we can type anything into the input field.
+2. Test if the input field is cleared if we click the Add button.
+3. Test if the input is added to the todo list if we click the Add button.
 
 ``` js
 const addTask = (tasks) => {

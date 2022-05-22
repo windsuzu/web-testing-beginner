@@ -4,7 +4,7 @@ In this repository, I would like to share with you some of the testing technique
 
 ## Jest
 
-[Move here to learn complete Jest testing skills ❤️](jest-beginner/)
+[Move here to learn more about Jest testing skills ❤️](jest-beginner/)
 
 In this section, we will practice some basic testing methods in Jest.
 
@@ -15,7 +15,7 @@ In this section, we will practice some basic testing methods in Jest.
 
 ## React-testing-library
 
-[Move here to learn complete React-testing-library skills ❤️](react-testing-library-beginner/)
+[Move here to learn more about React-testing-library skills ❤️](react-testing-library-beginner/)
 
 In this section, we will learn how to test on React components using react-testing-library based on Jest.
 
