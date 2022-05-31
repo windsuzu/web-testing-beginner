@@ -394,3 +394,31 @@ it("should render nothing when fetching error", async () => {
 
 ### Using in the development phase
 
+The mocking functionality provided by `msw` is not only convenient for testing purposes, but also benefits the development phase. We can follow [Mock Service Worker / Integrate / Browser](https://mswjs.io/docs/getting-started/integrate/browser) to set up `msw` for development, so that we can use the mock data returned by the [`src/mocks/handlers`](src/mocks/handlers.js) when developing our application.
+
+1. Install `mockServiceWorker` in the `public/` folder:
+
+``` js
+npx msw init public/ --save
+```
+
+2. Set up request intercept function in [`src/mocks/browser.js`](src/mocks/browser.js), as we did in `server.js`.
+
+``` js
+import { setupWorker } from "msw";
+import { handlers } from "./handlers";
+
+// This configures a Service Worker with the given request handlers.
+export const worker = setupWorker(...handlers);
+```
+
+3. Start the worker in your application's root [`index.js`](src/index.js).
+
+``` js
+if (process.env.NODE_ENV === "development") {
+    const { worker } = require("./mocks/browser");
+    worker.start();
+}
+```
+
+4. Now all your requests will be intercepted, and `msw` will return mock data to your client browser.
