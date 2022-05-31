@@ -26,6 +26,7 @@ In this section, we will learn how to test on React components using react-testi
 5. **Asynchronous** - Handling components that take time to display
 6. **Mock** - Simulating non-core but required components, functions, api requests
 7. **Integration Tests** - Testing the interaction between multiple components
+8. **MSW (Mock Service Worker)** - A handy tool to mock and intercept network requests and responses
 
 ## Cypress
 

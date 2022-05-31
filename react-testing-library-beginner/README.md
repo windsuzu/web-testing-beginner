@@ -4,16 +4,17 @@
 * [Installation](#installation)
 * [Test Structure](#test-structure)
 * [Find the Elements](#find-the-elements)
-  * [Example](#example)
+* [Example](#example)
 * [Assertions](#assertions)
 * [FireEvents](#fireevents)
-* [Asynchronous](#asynchronous)
 * [Mocks](#mocks)
-  * [Mocking Components](#mocking-components)
-  * [Mocking useState Functions](#mocking-usestate-functions)
-  * [Mocking APIs](#mocking-apis)
+* [Mocking Components](#mocking-components)
+* [Mocking useState Functions](#mocking-usestate-functions)
+* [Mocking APIs](#mocking-apis)
+* [Asynchronous](#asynchronous)
 * [Before & After Each](#before--after-each)
 * [Integration Tests](#integration-tests)
+* [MSW (Mock Service Worker)](#msw-mock-service-worker)
 
 ## Before
 
@@ -291,3 +292,105 @@ describe("add todo", () => {
     });
 });
 ```
+
+## MSW (Mock Service Worker)
+
+> You can get a quick overview of MSW from this [YouTube crash course](https://www.youtube.com/watch?v=oMv2eAGWtZU).
+
+According to [msw official introduction](https://mswjs.io/docs/), Mock Service Worker is an API mocking library that uses Service Worker API to intercept actual requests. And we can use `MSW` not only in our testing phase but also in development phase.
+
+First, we need to install `msw` to our dev-dependencies from either `npm` or `yarn`:
+
+```
+npm install msw --save-dev
+# or
+yarn add msw --dev
+```
+
+Next, we can create a single directory to handle all the modules related to mocking. Here we create a `src/mocks` directory and create a [`src/mocks/handlers.js`](src/mocks/handlers.js) to have all our request handlers.
+
+``` js
+// src/mocks/handlers.js
+
+import { rest } from 'msw'
+
+export const handlers = [
+    rest.get("https://randomuser.me/api", (req, res, ctx) => {
+
+        // If the client's request is `https://randomuser.me/api?results=5`
+        // the `resultsCount` will be equal to 5
+        const resultsCount = req.url.searchParams.get("results");
+
+        return res(
+            ctx.status(200),
+            ctx.json({ results: [ ... ]})
+        );
+    }),
+];
+```
+
+After we define all the api handlers, we need to add a new [`src/mocks/server.js`](src/mocks/server.js) to intercept all the requests and return mock data to these requests.
+
+``` js
+import { setupServer } from "msw/node";
+import { handlers } from "./handlers";
+
+export const server = setupServer(...handlers);
+```
+
+Then we can go to [setupTests.js](src/setupTests.js) created by `create-react-app`, and start our mock server. 
+
+``` js
+import { server } from "./mocks/server.js";
+
+// Establish API mocking before all tests.
+// onUnhandledRequest will return error 
+// when we face any request that is not being intercepted
+beforeAll(() => server.listen({ onUnhandledRequest: "error" }));
+
+// Reset any request handlers that we may add during the tests,
+// so they don't affect other tests.
+afterEach(() => server.resetHandlers());
+
+// Clean up after the tests are finished.
+afterAll(() => server.close());
+```
+
+Finally, let's move to [FollowerList.test.js](src/components/FollowersList/FollowerList.test.js) and see how we can test with `msw`. 
+
+When we `render(<MockFollowerList />)`, the api (`https://randomuser.me/api/?results=5`) will be called in the `useEffect()` in our `<FollowerList />`. Then, our [`src/mocks/server.js`](src/mocks/server.js) will intercept the api request, and return the mock data we defined in [`src/mocks/handlers.js`](src/mocks/handlers.js).
+
+``` js
+it("should render two followers from our msw handlers", async () => {
+    render(<MockFollowerList />);
+    const followers = await screen.findAllByTestId(/follower-item/i);
+    expect(followers.length).toBe(2);
+    expect(followers[0]).toHaveTextContent("John Doe");
+    expect(followers[1]).toHaveTextContent("Addison Bergeron");
+});
+```
+
+Now, we also want to test the error scenario when our server is down. we can mock the server, request, and response directly in our test block using `server.use()`:
+
+``` js
+import { rest } from "msw";
+import { server } from "../../mocks/server";
+
+it("should render nothing when fetching error", async () => {
+    server.use(
+        rest.get("https://randomuser.me/api", (req, res, ctx) => {
+            return res(
+                ctx.status(500),
+                ctx.json({ message: "Server Error" })
+            );
+        })
+    );
+
+    render(<MockFollowerList />);
+    const error = await screen.findByText(/server error/i);
+    expect(error).toBeInTheDocument();
+});
+```
+
+### Using in the development phase
+
